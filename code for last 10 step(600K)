@@ -8,7 +8,7 @@ def is_close(pos1, pos2, tol=1.0):
 
 # Load positions from the file
 positions = []
-with open("10ta.in", "r") as infile:
+with open("last10.in", "r") as infile:
     for line in infile:
         if line.startswith("Atom"):
             # Extract atom coordinates from the line
