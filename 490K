@@ -1,0 +1,98 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Function to check if two positions are close within a tolerance
+def is_close(pos1, pos2, tol=1.0):
+    """Check if two positions are close within a tolerance."""
+    return np.linalg.norm(np.array(pos1) - np.array(pos2)) < tol
+
+# Load positions from the file
+positions = []
+with open("490.in", "r") as infile:
+    for line in infile:
+        if line.startswith("Atom"):
+            # Extract atom coordinates from the line
+            coords = line.split(":")[1].strip()[1:-1].split()
+            
+            # Clean up any commas or extra characters
+            coords = [coord.replace(',', '') for coord in coords]
+            
+            x, y, z = map(float, coords)  # Convert to float
+            positions.append((x, y, z))
+
+Ref_atom = np.array(positions[0])
+
+# Prepare lists to store the differences for plotting
+group_ids = []
+x_diff = []
+y_diff = []
+z_diff = []
+Lx =   37.0247           
+Ly = 36.9025     
+Lz = 36.9989 
+
+# Process every 5-atom group
+for group_idx in range(0, len(positions), 5):
+    group = positions[group_idx:group_idx + 5]
+    atom = np.array(positions[group_idx])  # Current atom position
+    if len(group) < 5:
+        continue  # Skip incomplete groups
+
+    # Initialize ijk and theoretical_Pb
+    ijk = np.zeros(3, dtype=int)  # Initialize ijk as a numpy array
+    theoretical_Pb = np.zeros(3)  # Initialize theoretical_Pb as a numpy array
+
+    # Calculate center of geometry (COG) for the group
+    cog = np.mean(group, axis=0)
+    cog = cog - Ref_atom  # Subtract Ref_atom to get relative position
+    
+    # Approximate i, j, k by dividing COG by 37 and rounding to nearest integer
+    ijk[0] = np.round(cog[0] / Lx * 6).astype(int) + 1
+    ijk[1] = np.round(cog[1] / Ly * 6).astype(int) + 1
+    ijk[2] = np.round(cog[2] / Lz * 6).astype(int) + 1
+
+    # Compute theoretical center (expected position)
+    theoretical_Pb[0] = Lx * (ijk[0] - 1) / 6
+    theoretical_Pb[1] = Ly * (ijk[1] - 1) / 6
+    theoretical_Pb[2] = Lz * (ijk[2] - 1) / 6
+    print (ijk)
+    # Calculate the differences between actual atom position and theoretical position
+    atom = atom - Ref_atom  # Calculate the position relative to the reference atom
+    diff = atom - theoretical_Pb
+    
+    # Store the group index and the differences in x, y, and z for plotting
+    group_ids.append(group_idx // 5 + 1)  # Group index (starting from 1)
+    x_diff.append(diff[0])  # x difference
+    y_diff.append(diff[1])  # y difference
+    z_diff.append(diff[2])  # z difference
+
+# Plot the differences (atom - theoretical_Pb) for x, y, and z components
+
+# Plot x differences
+plt.figure(figsize=(10, 6))
+plt.subplot(3, 1, 1)
+plt.plot(group_ids, x_diff, label="x difference", marker='o', color='r')
+plt.xlabel('Group ID')
+plt.ylabel('x difference')
+plt.title('Difference in x coordinate 490K')
+plt.grid(True)
+
+# Plot y differences
+plt.subplot(3, 1, 2)
+plt.plot(group_ids, y_diff, label="y difference", marker='o', color='g')
+plt.xlabel('Group ID')
+plt.ylabel('y difference')
+plt.title('Difference in y coordinate Last step')
+plt.grid(True)
+
+# Plot z differences
+plt.subplot(3, 1, 3)
+plt.plot(group_ids, z_diff, label="z difference", marker='o', color='b')
+plt.xlabel('Group ID')
+plt.ylabel('z difference')
+plt.title('Difference in z coordinate Last step')
+plt.grid(True)
+
+# Show the plots
+plt.tight_layout()
+plt.show()
