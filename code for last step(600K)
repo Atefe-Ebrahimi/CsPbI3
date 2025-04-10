@@ -74,7 +74,7 @@ plt.subplot(3, 1, 1)
 plt.plot(group_ids, x_diff, label="x difference", marker='o', color='r')
 plt.xlabel('Group ID')
 plt.ylabel('x difference')
-plt.title('Difference in x coordinate 490K')
+plt.title('Difference in x coordinate last step 600K')
 plt.grid(True)
 
 # Plot y differences
